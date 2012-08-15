@@ -3,9 +3,10 @@
 Retries is a gem that provides a single function, `with_retries`, to evaluate a block with randomized,
 truncated, exponential backoff.
 
-There are similar projects out there (see [here](https://github.com/afazio/retry_block) and
-[here](https://bitbucket.org/amanking/retry_this/wiki/Home)) but these will require you to implement the
-backoff scheme yourself. If you don't need randomized exponential backoff, you should check out those gems.
+There are similar projects out there (see [retry_block](https://github.com/afazio/retry_block) and
+[retry_this](https://bitbucket.org/amanking/retry_this/wiki/Home), for example) but these will require you to
+implement the backoff scheme yourself. If you don't need randomized exponential backoff, you should check out
+those gems.
 
 ## Installation
 
@@ -91,6 +92,11 @@ To run the tests: first clone the repo, then
 
     $ bundle install
     $ bundle exec rake test
+
+## Authors
+
+* Harry Robertson
+* Caleb Spare
 
 ## License
 
