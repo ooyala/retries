@@ -19,7 +19,6 @@ or a flaky service. Here's how you can try it three times before failing:
 
 ``` ruby
 require "retries"
-
 with_retries(:max_tries => 3) { do_the_thing }
 ```
 
