@@ -1,5 +1,15 @@
 require "retries/version"
 
+class Retries
+  class << self
+    # You can use this to turn off all sleeping in with_retries. This can be useful in tests. Defaults to
+    # `true`.
+    attr_accessor :sleep_enabled
+  end
+end
+
+Retries.sleep_enabled = true
+
 module Kernel
   # Runs the supplied code block an retries with an exponential backoff.
   #
@@ -36,15 +46,19 @@ module Kernel
     rescue *exception_types_to_rescue => exception
       raise exception if attempts >= max_tries
       handler.call(exception, attempts) if handler
-      # The sleep time is an exponentially-increasing function of base_sleep_seconds. But, it never exceeds
-      # max_sleep_seconds.
-      sleep_seconds = [base_sleep_seconds * (2 ** (attempts - 1)), max_sleep_seconds].min
-      # Randomize to a random value in the range sleep_seconds/2 .. sleep_seconds
-      sleep_seconds = sleep_seconds * (0.5 * (1 + rand()))
-      # But never sleep less than base_sleep_seconds
-      sleep_seconds = [base_sleep_seconds, sleep_seconds].max
-      sleep sleep_seconds
+      # Don't sleep at all if sleeping is disabled (used in testing).
+      if Retries.sleep_enabled
+        # The sleep time is an exponentially-increasing function of base_sleep_seconds. But, it never exceeds
+        # max_sleep_seconds.
+        sleep_seconds = [base_sleep_seconds * (2 ** (attempts - 1)), max_sleep_seconds].min
+        # Randomize to a random value in the range sleep_seconds/2 .. sleep_seconds
+        sleep_seconds = sleep_seconds * (0.5 * (1 + rand()))
+        # But never sleep less than base_sleep_seconds
+        sleep_seconds = [base_sleep_seconds, sleep_seconds].max
+        sleep sleep_seconds
+      end
       retry
     end
   end
 end
+

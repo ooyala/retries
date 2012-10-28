@@ -1,5 +1,6 @@
 require "scope"
 require "minitest/autorun"
+require "timeout"
 
 $:.unshift File.join(File.dirname(__FILE__), "../lib")
 require "retries"
@@ -8,6 +9,10 @@ class CustomErrorA < RuntimeError; end
 class CustomErrorB < RuntimeError; end
 
 class RetriesTest < Scope::TestCase
+  setup do
+    Retries.sleep_enabled = true
+  end
+
   context "with_retries" do
     should "retry until successful" do
       tries = 0
@@ -68,6 +73,17 @@ class RetriesTest < Scope::TestCase
       end
       assert_equal 4, tries
       assert_equal 3, exception_handler_run_times
+    end
+
+    should "not sleep if Retries.sleep_enabled is false" do
+      Retries.sleep_enabled = false
+      assert_raises(RuntimeError) do # If we get a Timeout::Error, this won't pass.
+        Timeout.timeout(2) do
+          with_retries(:max_tries => 10, :base_sleep_seconds => 100, :max_sleep_seconds => 10000) do
+            raise "blah"
+          end
+        end
+      end
     end
   end
 end
