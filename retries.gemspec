@@ -6,7 +6,7 @@ Gem::Specification.new do |gem|
   gem.email         = ["caleb@ooyala.com"]
   gem.description   = %q{Retries is a gem for retrying blocks with randomized exponential backoff.}
   gem.summary       = %q{Retries is a gem for retrying blocks with randomized exponential backoff.}
-  gem.homepage      = ""
+  gem.homepage      = "https://github.com/ooyala/retries"
 
   gem.files         = `git ls-files`.split($\)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
