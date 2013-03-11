@@ -40,12 +40,13 @@ module Kernel
 
     # Let's do this thing
     attempts = 0
+    start_time = Time.now
     begin
       attempts += 1
       return block.call(attempts)
     rescue *exception_types_to_rescue => exception
       raise exception if attempts >= max_tries
-      handler.call(exception, attempts) if handler
+      handler.call(exception, attempts, Time.now - start_time) if handler
       # Don't sleep at all if sleeping is disabled (used in testing).
       if Retries.sleep_enabled
         # The sleep time is an exponentially-increasing function of base_sleep_seconds. But, it never exceeds

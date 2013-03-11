@@ -75,6 +75,24 @@ class RetriesTest < Scope::TestCase
       assert_equal 3, exception_handler_run_times
     end
 
+    should "pass total elapsed time to :handler upon each handled exception" do
+      exception_handler_run_times = 0
+      tries = 0
+      start_time = Time.now
+      handler = Proc.new do |exception, attempt_number, total_delay|
+        exception_handler_run_times += 1
+        # Check that the handler is passed the proper total delay time
+        assert(total_delay - (Time.now - start_time) <= 0.01, "total_delay=#{total_delay}, should be closer to #{Time.now - start_time}")
+      end
+      with_retries(:max_tries => 4, :base_sleep_seconds => 0.1, :max_sleep_seconds => 0.5, :handler => handler,
+                   :rescue => CustomErrorA) do
+        tries += 1
+        raise CustomErrorA.new if tries < 4
+      end
+      assert_equal 4, tries
+      assert_equal 3, exception_handler_run_times
+    end
+
     should "not sleep if Retries.sleep_enabled is false" do
       Retries.sleep_enabled = false
       assert_raises(RuntimeError) do # If we get a Timeout::Error, this won't pass.
