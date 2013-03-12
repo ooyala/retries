@@ -48,12 +48,13 @@ end
 ### Handlers
 
 `with_retries` allows you to pass a custom handler that will be called each time before the block is retried.
-The handler will be called with two arguments: `exception` (the rescued exception) and `attempt_number` (the
-number of attempts that have been made thus far).
+The handler will be called with three arguments: `exception` (the rescued exception), `attempt_number` (the
+number of attempts that have been made thus far), and `total_delay` (the number of seconds since the start
+of the time the block was first attempted, including all retries).
 
 ``` ruby
-handler = Proc.new do |exception, attempt_number|
-  puts "Handler saw a #{exception.class}; retry attempt #{attempt_number}"
+handler = Proc.new do |exception, attempt_number, total_delay|
+  puts "Handler saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."
 end
 with_retries(:max_tries => 5, :handler => handler, :rescue => [RuntimeError, ZeroDivisionError]) do |attempt|
   (1 / 0) if attempt == 3
@@ -61,13 +62,13 @@ with_retries(:max_tries => 5, :handler => handler, :rescue => [RuntimeError, Zer
 end
 ```
 
-This will print:
+This will print something like:
 
 ```
-Handler saw a RuntimeError; retry attempt 1
-Handler saw a RuntimeError; retry attempt 2
-Handler saw a ZeroDivisionError; retry attempt 3
-Handler saw a RuntimeError; retry attempt 4
+Handler saw a RuntimeError; retry attempt 1; 2.9e-05 seconds have passed.
+Handler saw a RuntimeError; retry attempt 2; 0.501176 seconds have passed.
+Handler saw a ZeroDivisionError; retry attempt 3; 1.129921 seconds have passed.
+Handler saw a RuntimeError; retry attempt 4; 1.886828 seconds have passed.
 ```
 
 ### Delay parameters
