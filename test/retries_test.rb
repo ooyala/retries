@@ -66,8 +66,8 @@ class RetriesTest < Scope::TestCase
         assert_equal exception_handler_run_times, attempt_number
         assert exception.is_a?(CustomErrorA)
       end
-      with_retries(:max_tries => 4, :base_sleep_seconds => 0, :max_sleep_seconds => 0, :handler => handler,
-                   :rescue => CustomErrorA) do
+      with_retries(:max_tries => 4, :base_sleep_seconds => 0, :max_sleep_seconds => 0, 
+                   :handler => handler, :rescue => CustomErrorA) do
         tries += 1
         raise CustomErrorA.new if tries < 4
       end
@@ -80,17 +80,14 @@ class RetriesTest < Scope::TestCase
       tries = 0
       start_time = Time.now
       handler = Proc.new do |exception, attempt_number, total_delay|
-        exception_handler_run_times += 1
         # Check that the handler is passed the proper total delay time
-        assert(total_delay - (Time.now - start_time) <= 0.01, "total_delay=#{total_delay}, should be closer to #{Time.now - start_time}")
+        assert_in_delta(total_delay, Time.now - start_time, 0.01)
       end
-      with_retries(:max_tries => 4, :base_sleep_seconds => 0.1, :max_sleep_seconds => 0.5, :handler => handler,
-                   :rescue => CustomErrorA) do
+      with_retries(:max_tries => 3, :base_sleep_seconds => 0.05, :max_sleep_seconds => 0.25,
+                   :handler => handler, :rescue => CustomErrorA) do
         tries += 1
-        raise CustomErrorA.new if tries < 4
+        raise CustomErrorA.new if tries < 3
       end
-      assert_equal 4, tries
-      assert_equal 3, exception_handler_run_times
     end
 
     should "not sleep if Retries.sleep_enabled is false" do

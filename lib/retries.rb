@@ -18,7 +18,8 @@ module Kernel
   # @option options [Float] :base_sleep_seconds (0.5) The starting delay between retries.
   # @option options [Float] :max_sleep_seconds (1.0) The maximum to which to expand the delay between retries.
   # @option options [Proc] :handler (nil) If not `nil`, a `Proc` that will be called for each retry. It will be
-  #         passed two arguments, `exception` (the rescued exception) and `attempt_number`.
+  #         passed three arguments, `exception` (the rescued exception), `attempt_number`,
+  #         and `total_delay` (seconds since start of first attempt).
   # @option options [Exception, <Exception>] :rescue (StandardError) This may be a specific exception class to
   #         rescue or an array of classes.
   # @yield [attempt_number] The (required) block to be executed, which is passed the attempt number as a
