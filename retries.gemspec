@@ -18,6 +18,7 @@ Gem::Specification.new do |gem|
   # For running the tests
   gem.add_development_dependency "rake"
   gem.add_development_dependency "scope"
+  gem.add_development_dependency "rr"
 
   # For generating the documentation
   gem.add_development_dependency "yard"

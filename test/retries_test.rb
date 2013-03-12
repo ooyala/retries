@@ -1,9 +1,16 @@
 require "scope"
 require "minitest/autorun"
 require "timeout"
+require "rr"
 
 $:.unshift File.join(File.dirname(__FILE__), "../lib")
 require "retries"
+
+module Scope
+  class TestCase
+    include RR::Adapters::MiniTest
+  end
+end
 
 class CustomErrorA < RuntimeError; end
 class CustomErrorB < RuntimeError; end
@@ -66,7 +73,7 @@ class RetriesTest < Scope::TestCase
         assert_equal exception_handler_run_times, attempt_number
         assert exception.is_a?(CustomErrorA)
       end
-      with_retries(:max_tries => 4, :base_sleep_seconds => 0, :max_sleep_seconds => 0, 
+      with_retries(:max_tries => 4, :base_sleep_seconds => 0, :max_sleep_seconds => 0,
                    :handler => handler, :rescue => CustomErrorA) do
         tries += 1
         raise CustomErrorA.new if tries < 4
@@ -76,15 +83,15 @@ class RetriesTest < Scope::TestCase
     end
 
     should "pass total elapsed time to :handler upon each handled exception" do
-      exception_handler_run_times = 0
-      tries = 0
-      start_time = Time.now
+      Retries.sleep_enabled = false
+      fake_time = -10
+      stub(Time).now { fake_time += 10 }
       handler = Proc.new do |exception, attempt_number, total_delay|
         # Check that the handler is passed the proper total delay time
-        assert_in_delta(total_delay, Time.now - start_time, 0.01)
+        assert_equal fake_time, total_delay
       end
-      with_retries(:max_tries => 3, :base_sleep_seconds => 0.05, :max_sleep_seconds => 0.25,
-                   :handler => handler, :rescue => CustomErrorA) do
+      tries = 0
+      with_retries(:max_tries => 3, :handler => handler, :rescue => CustomErrorA) do
         tries += 1
         raise CustomErrorA.new if tries < 3
       end
