@@ -43,6 +43,18 @@ class RetriesTest < Scope::TestCase
       end
     end
 
+    should "rescue StandardError if no :rescue is specified" do
+      tries = 0
+      class MyError < StandardError; end
+      with_retries(:base_sleep_seconds => 0, :max_sleep_seconds => 0) do
+        tries += 1
+        if tries < 2
+          raise MyError, "boom"
+        end
+      end
+      assert_equal 2, tries
+    end
+
     should "immediately raise any exception not specified by :rescue" do
       tries = 0
       assert_raises(CustomErrorA) do
