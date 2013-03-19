@@ -35,7 +35,7 @@ module Kernel
       raise "#{options_error_string} :base_sleep_seconds cannot be greater than :max_sleep_seconds."
     end
     handler = options[:handler]
-    exception_types_to_rescue = Array(options[:rescue]) || [StandardError]
+    exception_types_to_rescue = Array(options[:rescue] || StandardError)
     raise "#{options_error_string} with_retries must be passed a block" unless block_given?
 
     # Let's do this thing
