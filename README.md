@@ -108,8 +108,12 @@ To run the tests: first clone the repo, then
 
 ## Authors
 
-* Harry Robertson
-* Caleb Spare
+Retries was created by Harry Robertson and Caleb Spare.
+
+Other contributions from:
+
+* Harry Lascelles ([hlascelles](https://github.com/hlascelles))
+* Michael Mazour ([mmazour](https://github.com/mmazour))
 
 ## License
 
