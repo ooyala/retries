@@ -22,6 +22,11 @@ module Kernel
   #         and `total_delay` (seconds since start of first attempt).
   # @option options [Exception, <Exception>] :rescue (StandardError) This may be a specific exception class to
   #         rescue or an array of classes.
+  # @option options [Boolean] :allow_failure (false) If true, will skip raising the exception when the final
+  #         retry attempt raises, allowing for graceful failure. Likely used in conjunction with the
+  #         failure_handler option.
+  # @option options [Proc] :failure_handler (nil) If not `nil`, a `Proc` that will be called when the final
+  #         retry attempt fails. Typically used in conunction with :allow_failure.
   # @yield [attempt_number] The (required) block to be executed, which is passed the attempt number as a
   #         parameter.
   def with_retries(options = {}, &block)
@@ -37,6 +42,8 @@ module Kernel
     handler = options[:handler]
     exception_types_to_rescue = Array(options[:rescue] || StandardError)
     raise "#{options_error_string} with_retries must be passed a block" unless block_given?
+    allow_failure = options[:allow_failure] || false
+    failure_handler = options[:failure_handler]
 
     # Let's do this thing
     attempts = 0
@@ -45,7 +52,14 @@ module Kernel
       attempts += 1
       return block.call(attempts)
     rescue *exception_types_to_rescue => exception
-      raise exception if attempts >= max_tries
+      if attempts >= max_tries
+        failure_handler.call(exception, attempts, Time.now - start_time) if failure_handler
+        if allow_failure
+          return
+        else
+          raise exception
+        end
+      end
       handler.call(exception, attempts, Time.now - start_time) if handler
       # Don't sleep at all if sleeping is disabled (used in testing).
       if Retries.sleep_enabled

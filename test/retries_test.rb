@@ -119,5 +119,37 @@ class RetriesTest < Scope::TestCase
         end
       end
     end
+
+    should "not raise exception on final try if allow_failure is true" do
+      Retries.sleep_enabled = false
+      assert_nothing_raised do
+        with_retries(:max_tries => 2, :allow_failure => true, :rescue => CustomErrorA) do
+          tries += 1
+          raise CustomErrorA.new
+        end
+      end
+    end
+
+    should "run :failure_handler with the expected arguments upon final retry's exception" do
+      failure_handler_run_times = 0
+      max_tries = 3
+      tries = 0
+      handler = Proc.new do |exception, attempt_number|
+        failure_handler_run_times += 1
+        # Check that the handler is passed the proper exception and attempt number
+        assert_equal failure_handler_run_times, 1
+        assert_equal attempt_number, max_tries
+        assert exception.is_a?(CustomErrorA)
+      end
+      assert_nothing_raised do
+        with_retries(:max_tries => max_tries, :base_sleep_seconds => 0, :max_sleep_seconds => 0,
+                     :allow_failure => true, :failure_handler => handler, :rescue => CustomErrorA) do
+          tries += 1
+          raise CustomErrorA.new
+        end
+      end
+      assert_equal max_tries, tries
+      assert_equal 1, failure_handler_run_times
+    end
   end
 end
