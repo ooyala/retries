@@ -1,6 +1,6 @@
-require "retries/version"
-
 class Retries
+  VERSION = "1.0.0"
+
   class << self
     # You can use this to turn off all sleeping in with_retries. This can be useful in tests. Defaults to
     # `true`.
