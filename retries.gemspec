@@ -7,6 +7,7 @@ Gem::Specification.new do |gem|
   gem.description   = %q{Retries is a gem for retrying blocks with randomized exponential backoff.}
   gem.summary       = %q{Retries is a gem for retrying blocks with randomized exponential backoff.}
   gem.homepage      = "https://github.com/ooyala/retries"
+  gem.licenses      = ["MIT"]
 
   gem.files         = ["lib/retries.rb"]
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
