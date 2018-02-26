@@ -1,4 +1,6 @@
-require_relative 'lib/retries.rb'
+# frozen_string_literal: true
+
+require_relative 'lib/retries'
 
 Gem::Specification.new do |gem|
   gem.authors       = ['Caleb Spare']
@@ -16,15 +18,15 @@ Gem::Specification.new do |gem|
   gem.version       = Retries::VERSION
   gem.license       = 'MIT'
 
+  gem.required_ruby_version = '~> 2.4'
+
   # For running the tests
   gem.add_development_dependency 'minitest', '~> 5.0'
-  gem.add_development_dependency 'rake', '~> 10.0'
-  gem.add_development_dependency 'rr', '~> 1.1'
+  gem.add_development_dependency 'rake', '~> 13.0'
 
   # For generating the documentation
-  gem.add_development_dependency 'redcarpet', '~> 3.4'
-  gem.add_development_dependency 'yard', '~> 0.9'
+  gem.add_development_dependency 'yard', '~> 0.9.0'
 
   # For linting
-  gem.add_development_dependency 'rubocop', '~> 0.52'
+  gem.add_development_dependency 'rubocop', '~> 0.82.0'
 end

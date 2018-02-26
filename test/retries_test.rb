@@ -1,5 +1,6 @@
+# frozen_string_literal: true
+
 require 'minitest/autorun'
-require 'rr'
 require 'timeout'
 
 require_relative '../lib/retries'
@@ -22,6 +23,7 @@ class RetriesTest < Minitest::Test
       # Verify that the attempt number passed in is accurate
       assert_equal tries, attempt
       raise CustomErrorA if tries < 4
+
       'done'
     end
     assert_equal 'done', result
@@ -67,6 +69,7 @@ class RetriesTest < Minitest::Test
     ) do |attempt|
       raise CustomErrorA if attempt.zero?
       raise CustomErrorB if attempt == 1
+
       'done'
     end
     assert_equal 'done', result
@@ -95,15 +98,16 @@ class RetriesTest < Minitest::Test
   def test_pass_total_elapsed_time_to_handler_upon_each_handled_exception
     Retries.sleep_enabled = false
     fake_time = -10
-    stub(Time).now { fake_time += 10 }
-    handler = proc do |_exception, _attempt_number, total_delay|
-      # Check that the handler is passed the proper total delay time
-      assert_equal fake_time, total_delay
-    end
-    tries = 0
-    with_retries(max_tries: 3, handler: handler, rescue: CustomErrorA) do
-      tries += 1
-      raise CustomErrorA if tries < 3
+    Time.stub :now, -> { fake_time += 10 } do
+      handler = proc do |_exception, _attempt_number, total_delay|
+        # Check that the handler is passed the proper total delay time
+        assert_equal fake_time, total_delay
+      end
+      tries = 0
+      with_retries(max_tries: 3, handler: handler, rescue: CustomErrorA) do
+        tries += 1
+        raise CustomErrorA if tries < 3
+      end
     end
   end
 

@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 # Class for `VERSION` constant and `sleep_enabled` accessor
 class Retries
-  VERSION = '1.0.0'.freeze
+  VERSION = '1.0.0'
 
   class << self
     # You can use this to turn off all sleeping in with_retries.
@@ -36,9 +38,11 @@ module Kernel
     # Check the options and set defaults
     options_error_string = 'Error with options to with_retries:'
     max_tries = options[:max_tries] || 3
-    unless max_tries > 0
+
+    unless max_tries.positive?
       raise "#{options_error_string} :max_tries must be greater than 0."
     end
+
     base_sleep_seconds = options[:base_sleep_seconds] || 0.5
     max_sleep_seconds = options[:max_sleep_seconds] || 1.0
     if base_sleep_seconds > max_sleep_seconds
@@ -58,10 +62,11 @@ module Kernel
     start_time = Time.now
     begin
       attempts += 1
-      return yield(attempts)
-    rescue *exception_types_to_rescue => exception
-      raise exception if attempts >= max_tries
-      handler.call(exception, attempts, Time.now - start_time) if handler
+      yield(attempts)
+    rescue *exception_types_to_rescue => e
+      raise e if attempts >= max_tries
+
+      handler&.call(e, attempts, Time.now - start_time)
       # Don't sleep at all if sleeping is disabled (used in testing).
       if Retries.sleep_enabled
         # The sleep time is an exponentially-increasing function
