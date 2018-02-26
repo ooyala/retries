@@ -142,7 +142,7 @@ describe Retries do
         end
       end
     end
-      .to raise_error RuntimeError
+      .to raise_error RuntimeError, 'blah'
   end
 
   it 'raises error if :base_sleep_seconds is greater than :max_sleep_seconds' do
