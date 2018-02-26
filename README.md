@@ -76,7 +76,7 @@ Handler saw a RuntimeError; retry attempt 4; 1.886828 seconds have passed.
 By default, `with_retries` will wait about a half second between the first and second attempts, and then the
 delay time will increase exponentially between attempts (but stay at no more than 1 second). The delays are
 perturbed randomly. You can control the parameters via the two options `:base_sleep_seconds` and
-`:max_sleep_seconds`. For instance, you can start the delay at 100ms and go up to a maximum of about 2
+`:max_sleep_seconds`. For instance, you can start the delay at 100 ms and go up to a maximum of about 2
 seconds:
 
 ``` ruby
@@ -97,14 +97,16 @@ with caution.
 
 ## Issues
 
-File tickets here on Github.
+File tickets here on GitHub.
 
 ## Development
 
 To run the tests: first clone the repo, then
 
-    $ bundle install
-    $ bundle exec rake test
+```
+$ bundle install
+$ bundle exec rake test
+```
 
 ## Authors
 
@@ -112,8 +114,8 @@ Retries was created by Harry Robertson and Caleb Spare.
 
 Other contributions from:
 
-* Harry Lascelles ([hlascelles](https://github.com/hlascelles))
-* Michael Mazour ([mmazour](https://github.com/mmazour))
+*   Harry Lascelles ([hlascelles](https://github.com/hlascelles))
+*   Michael Mazour ([mmazour](https://github.com/mmazour))
 
 ## License
 
