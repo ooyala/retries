@@ -5,13 +5,9 @@ require 'bundler/gem_tasks'
 begin
   require 'rspec/core/rake_task'
 
-  namespace :test do
-    RSpec::Core::RakeTask.new(:units)
-  end
+  RSpec::Core::RakeTask.new
 
-  task test: ['test:units']
-
-  task default: :test
+  task default: :spec
 rescue LoadError
   puts 'No RSpec available'
 end
