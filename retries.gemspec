@@ -1,4 +1,4 @@
-require File.expand_path('../lib/retries.rb', __FILE__)
+require_relative 'lib/retries.rb'
 
 Gem::Specification.new do |gem|
   gem.authors       = ['Caleb Spare']

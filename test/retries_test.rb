@@ -2,8 +2,7 @@ require 'minitest/autorun'
 require 'rr'
 require 'timeout'
 
-$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '../lib')
-require 'retries'
+require_relative '../lib/retries'
 
 class CustomErrorA < RuntimeError; end
 class CustomErrorB < RuntimeError; end
