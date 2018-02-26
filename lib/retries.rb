@@ -36,25 +36,23 @@ module Kernel
   #   which is passed the attempt number as a parameter.
   def with_retries(options = {}, &_block)
     # Check the options and set defaults
-    options_error_string = 'Error with options to with_retries:'
     max_tries = options[:max_tries] || 3
-
     unless max_tries.positive?
-      raise "#{options_error_string} :max_tries must be greater than 0."
+      raise ArgumentError, ':max_tries must be greater than 0'
     end
 
     base_sleep_seconds = options[:base_sleep_seconds] || 0.5
     max_sleep_seconds = options[:max_sleep_seconds] || 1.0
     if base_sleep_seconds > max_sleep_seconds
       raise(
-        "#{options_error_string} :base_sleep_seconds cannot be greater" \
-        ' than :max_sleep_seconds.'
+        ArgumentError,
+        ':base_sleep_seconds cannot be greater than :max_sleep_seconds'
       )
     end
     handler = options[:handler]
     exception_types_to_rescue = Array(options[:rescue] || StandardError)
     unless block_given?
-      raise "#{options_error_string} with_retries must be passed a block"
+      raise ArgumentError, 'with_retries must be passed a block'
     end
 
     # Let's do this thing

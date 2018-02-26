@@ -44,20 +44,16 @@ describe Retries do
     proc do
       with_retries(max_tries: 0) {}
     end
-      .must_raise
-      .message.must_equal(
-        'Error with options to with_retries: :max_tries must be greater than 0.'
-      )
+      .must_raise(ArgumentError)
+      .message.must_equal ':max_tries must be greater than 0'
   end
 
   it 'raises error if :max_tries is less than 0' do
     proc do
       with_retries(max_tries: -1) {}
     end
-      .must_raise
-      .message.must_equal(
-        'Error with options to with_retries: :max_tries must be greater than 0.'
-      )
+      .must_raise(ArgumentError)
+      .message.must_equal ':max_tries must be greater than 0'
   end
 
   it 'rescue standarderror if no rescue is specified' do
@@ -153,10 +149,9 @@ describe Retries do
     proc do
       with_retries(base_sleep_seconds: 2, max_sleep_seconds: 1) {}
     end
-      .must_raise
+      .must_raise(ArgumentError)
       .message.must_equal(
-        'Error with options to with_retries:' \
-        ' :base_sleep_seconds cannot be greater than :max_sleep_seconds.'
+        ':base_sleep_seconds cannot be greater than :max_sleep_seconds'
       )
   end
 
@@ -164,10 +159,7 @@ describe Retries do
     proc do
       with_retries
     end
-      .must_raise
-      .message.must_equal(
-        'Error with options to with_retries:' \
-        ' with_retries must be passed a block'
-      )
+      .must_raise(ArgumentError)
+      .message.must_equal 'with_retries must be passed a block'
   end
 end
