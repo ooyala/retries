@@ -21,8 +21,8 @@ Gem::Specification.new do |gem|
   gem.required_ruby_version = '~> 2.4'
 
   # For running the tests
-  gem.add_development_dependency 'minitest', '~> 5.0'
   gem.add_development_dependency 'rake', '~> 13.0'
+  gem.add_development_dependency 'rspec', '~> 3.9'
 
   # For generating the documentation
   gem.add_development_dependency 'yard', '~> 0.9.0'

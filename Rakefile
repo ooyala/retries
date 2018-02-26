@@ -1,14 +1,17 @@
 # frozen_string_literal: true
 
 require 'bundler/gem_tasks'
-require 'rake/testtask'
 
-task test: ['test:units']
+begin
+  require 'rspec/core/rake_task'
 
-namespace :test do
-  Rake::TestTask.new(:units) do |task|
-    task.test_files = FileList['test/**/*.rb']
+  namespace :test do
+    RSpec::Core::RakeTask.new(:units)
   end
-end
 
-task default: :test
+  task test: ['test:units']
+
+  task default: :test
+rescue LoadError
+  puts 'No RSpec available'
+end

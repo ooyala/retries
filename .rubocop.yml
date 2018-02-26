@@ -18,10 +18,6 @@ Style/HashTransformValues:
 AllCops:
   TargetRubyVersion: 2.4
 
-Metrics/MethodLength:
+Metrics/BlockLength:
   Exclude:
-    - 'test/**/*'
-
-Metrics/ClassLength:
-  Exclude:
-    - 'test/**/*'
+    - spec/**/*

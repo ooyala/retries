@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require 'minitest/autorun'
 require 'timeout'
 
 require_relative '../lib/retries'
@@ -8,12 +7,12 @@ require_relative '../lib/retries'
 class CustomErrorA < RuntimeError; end
 class CustomErrorB < RuntimeError; end
 
-class RetriesTest < Minitest::Test
-  def setup
+describe Retries do
+  before do
     Retries.sleep_enabled = true
   end
 
-  def test_retries_until_successful
+  it 'retries until successful' do
     tries = 0
     result = with_retries(
       max_tries: 4, base_sleep_seconds: 0, max_sleep_seconds: 0,
@@ -21,37 +20,38 @@ class RetriesTest < Minitest::Test
     ) do |attempt|
       tries += 1
       # Verify that the attempt number passed in is accurate
-      assert_equal tries, attempt
+      expect(attempt).to eq tries
       raise CustomErrorA if tries < 4
 
       'done'
     end
-    assert_equal 'done', result
-    assert_equal 4, tries
+    expect(result).to eq 'done'
+    expect(tries).to eq 4
   end
 
-  def test_re_raises_after_max_tries
-    assert_raises(CustomErrorA) do
+  it 're-raises after max tries' do
+    expect do
       with_retries(
         base_sleep_seconds: 0, max_sleep_seconds: 0, rescue: CustomErrorA
       ) do
         raise CustomErrorA
       end
     end
+      .to raise_error CustomErrorA
   end
 
-  def test_rescue_standarderror_if_no_rescue_is_specified
+  it 'rescue standarderror if no rescue is specified' do
     tries = 0
     with_retries(base_sleep_seconds: 0, max_sleep_seconds: 0) do
       tries += 1
       raise CustomErrorA, 'boom' if tries < 2
     end
-    assert_equal 2, tries
+    expect(tries).to eq 2
   end
 
-  def test_immediately_raise_any_exception_not_specified_by_rescue
+  it 'immediately raise any exception not specified by rescue' do
     tries = 0
-    assert_raises(CustomErrorA) do
+    expect do
       with_retries(
         base_sleep_seconds: 0, max_sleep_seconds: 0, rescue: CustomErrorB
       ) do
@@ -59,10 +59,11 @@ class RetriesTest < Minitest::Test
         raise CustomErrorA
       end
     end
-    assert_equal 1, tries
+      .to raise_error CustomErrorA
+    expect(tries).to eq 1
   end
 
-  def test_allow_for_catching_any_of_multiple_exceptions_specified_by_rescue
+  it 'allow for catching any of multiple exceptions specified by rescue' do
     result = with_retries(
       max_tries: 3, base_sleep_seconds: 0, max_sleep_seconds: 0,
       rescue: [CustomErrorA, CustomErrorB]
@@ -72,17 +73,17 @@ class RetriesTest < Minitest::Test
 
       'done'
     end
-    assert_equal 'done', result
+    expect(result).to eq 'done'
   end
 
-  def test_run_handler_with_the_expected_args_upon_each_handled_exception
+  it 'run handler with the expected args upon each handled exception' do
     exception_handler_run_times = 0
     tries = 0
     handler = proc do |exception, attempt_number|
       exception_handler_run_times += 1
       # Check that the handler is passed the proper exception and attempt number
-      assert_equal exception_handler_run_times, attempt_number
-      assert exception.is_a?(CustomErrorA)
+      expect(attempt_number).to eq exception_handler_run_times
+      expect(exception).to be_instance_of CustomErrorA
     end
     with_retries(
       max_tries: 4, base_sleep_seconds: 0, max_sleep_seconds: 0,
@@ -91,30 +92,32 @@ class RetriesTest < Minitest::Test
       tries += 1
       raise CustomErrorA if tries < 4
     end
-    assert_equal 4, tries
-    assert_equal 3, exception_handler_run_times
+    expect(tries).to eq 4
+    expect(exception_handler_run_times).to eq 3
   end
 
-  def test_pass_total_elapsed_time_to_handler_upon_each_handled_exception
+  it 'pass total elapsed time to handler upon each handled exception' do
     Retries.sleep_enabled = false
     fake_time = -10
-    Time.stub :now, -> { fake_time += 10 } do
-      handler = proc do |_exception, _attempt_number, total_delay|
-        # Check that the handler is passed the proper total delay time
-        assert_equal fake_time, total_delay
-      end
-      tries = 0
-      with_retries(max_tries: 3, handler: handler, rescue: CustomErrorA) do
-        tries += 1
-        raise CustomErrorA if tries < 3
-      end
+    allow(Time).to receive(:now) { fake_time += 10 }
+
+    handler = proc do |_exception, _attempt_number, total_delay|
+      # Check that the handler is passed the proper total delay time
+      expect(total_delay).to eq fake_time
+    end
+
+    tries = 0
+
+    with_retries(max_tries: 3, handler: handler, rescue: CustomErrorA) do
+      tries += 1
+      raise CustomErrorA if tries < 3
     end
   end
 
-  def test_not_sleep_if_sleep_enabled_is_false
+  it 'not sleep if sleep enabled is false' do
     Retries.sleep_enabled = false
     # If we get a Timeout::Error, this won't pass.
-    assert_raises(RuntimeError) do
+    expect do
       Timeout.timeout(2) do
         with_retries(
           max_tries: 10, base_sleep_seconds: 100, max_sleep_seconds: 10_000
@@ -123,5 +126,6 @@ class RetriesTest < Minitest::Test
         end
       end
     end
+      .to raise_error RuntimeError
   end
 end
