@@ -40,6 +40,26 @@ describe Retries do
       .to raise_error CustomErrorA
   end
 
+  it 'raises error if :max_tries is equal to 0' do
+    proc do
+      with_retries(max_tries: 0) {}
+    end
+      .must_raise
+      .message.must_equal(
+        'Error with options to with_retries: :max_tries must be greater than 0.'
+      )
+  end
+
+  it 'raises error if :max_tries is less than 0' do
+    proc do
+      with_retries(max_tries: -1) {}
+    end
+      .must_raise
+      .message.must_equal(
+        'Error with options to with_retries: :max_tries must be greater than 0.'
+      )
+  end
+
   it 'rescue standarderror if no rescue is specified' do
     tries = 0
     with_retries(base_sleep_seconds: 0, max_sleep_seconds: 0) do
@@ -127,5 +147,27 @@ describe Retries do
       end
     end
       .to raise_error RuntimeError
+  end
+
+  it 'raises error if :base_sleep_seconds is greater than :max_sleep_seconds' do
+    proc do
+      with_retries(base_sleep_seconds: 2, max_sleep_seconds: 1) {}
+    end
+      .must_raise
+      .message.must_equal(
+        'Error with options to with_retries:' \
+        ' :base_sleep_seconds cannot be greater than :max_sleep_seconds.'
+      )
+  end
+
+  it 'raises error if no block passed' do
+    proc do
+      with_retries
+    end
+      .must_raise
+      .message.must_equal(
+        'Error with options to with_retries:' \
+        ' with_retries must be passed a block'
+      )
   end
 end
