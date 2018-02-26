@@ -123,7 +123,7 @@ To run the tests: first clone the repo, then
 
 ```
 $ bundle install
-$ bundle exec rake test
+$ bundle exec rake
 ```
 
 ## Authors

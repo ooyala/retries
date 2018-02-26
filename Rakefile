@@ -8,3 +8,5 @@ namespace :test do
     task.test_files = FileList['test/**/*.rb']
   end
 end
+
+task default: :test
