@@ -145,6 +145,7 @@ Other contributions from:
 
 *   Harry Lascelles ([hlascelles](https://github.com/hlascelles))
 *   Michael Mazour ([mmazour](https://github.com/mmazour))
+*   Alexander Popov ([AlexWayfer](https://github.com/AlexWayfer))
 
 ## License
 
