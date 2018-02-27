@@ -3,7 +3,7 @@
 # Class for retries running
 class Retries
   # Current version
-  VERSION = '1.0.0'
+  VERSION = '2.0.0'
 
   class << self
     # Global (default) options. Can be changed via `#[]` or `#merge!`.
