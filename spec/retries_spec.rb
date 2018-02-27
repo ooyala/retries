@@ -9,15 +9,14 @@ class CustomErrorB < RuntimeError; end
 
 describe Retries do
   before do
-    Retries.sleep_enabled = true
+    Retries.options.merge!(
+      sleep_enabled: true, base_sleep_seconds: 0, max_sleep_seconds: 0
+    )
   end
 
   it 'retries until successful' do
     tries = 0
-    result = with_retries(
-      max_tries: 4, base_sleep_seconds: 0, max_sleep_seconds: 0,
-      rescue: CustomErrorA
-    ) do |attempt|
+    result = Retries.run(max_tries: 4, rescue: CustomErrorA) do |attempt|
       tries += 1
       # Verify that the attempt number passed in is accurate
       expect(attempt).to eq tries
@@ -31,9 +30,7 @@ describe Retries do
 
   it 're-raises after max tries' do
     expect do
-      with_retries(
-        base_sleep_seconds: 0, max_sleep_seconds: 0, rescue: CustomErrorA
-      ) do
+      Retries.run(rescue: CustomErrorA) do
         raise CustomErrorA
       end
     end
@@ -41,24 +38,22 @@ describe Retries do
   end
 
   it 'raises error if :max_tries is equal to 0' do
-    proc do
-      with_retries(max_tries: 0) {}
+    expect do
+      Retries.run(max_tries: 0) {}
     end
-      .must_raise(ArgumentError)
-      .message.must_equal ':max_tries must be greater than 0'
+      .to raise_error ArgumentError, ':max_tries must be greater than 0'
   end
 
   it 'raises error if :max_tries is less than 0' do
-    proc do
-      with_retries(max_tries: -1) {}
+    expect do
+      Retries.run(max_tries: -1) {}
     end
-      .must_raise(ArgumentError)
-      .message.must_equal ':max_tries must be greater than 0'
+      .to raise_error ArgumentError, ':max_tries must be greater than 0'
   end
 
   it 'rescue standarderror if no rescue is specified' do
     tries = 0
-    with_retries(base_sleep_seconds: 0, max_sleep_seconds: 0) do
+    Retries.run do
       tries += 1
       raise CustomErrorA, 'boom' if tries < 2
     end
@@ -68,9 +63,7 @@ describe Retries do
   it 'immediately raise any exception not specified by rescue' do
     tries = 0
     expect do
-      with_retries(
-        base_sleep_seconds: 0, max_sleep_seconds: 0, rescue: CustomErrorB
-      ) do
+      Retries.run(rescue: CustomErrorB) do
         tries += 1
         raise CustomErrorA
       end
@@ -80,9 +73,8 @@ describe Retries do
   end
 
   it 'allow for catching any of multiple exceptions specified by rescue' do
-    result = with_retries(
-      max_tries: 3, base_sleep_seconds: 0, max_sleep_seconds: 0,
-      rescue: [CustomErrorA, CustomErrorB]
+    result = Retries.run(
+      max_tries: 3, rescue: [CustomErrorA, CustomErrorB]
     ) do |attempt|
       raise CustomErrorA if attempt.zero?
       raise CustomErrorB if attempt == 1
@@ -101,10 +93,7 @@ describe Retries do
       expect(attempt_number).to eq exception_handler_run_times
       expect(exception).to be_instance_of CustomErrorA
     end
-    with_retries(
-      max_tries: 4, base_sleep_seconds: 0, max_sleep_seconds: 0,
-      handler: handler, rescue: CustomErrorA
-    ) do
+    Retries.run(max_tries: 4, handler: handler, rescue: CustomErrorA) do
       tries += 1
       raise CustomErrorA if tries < 4
     end
@@ -113,8 +102,9 @@ describe Retries do
   end
 
   it 'pass total elapsed time to handler upon each handled exception' do
-    Retries.sleep_enabled = false
+    Retries.options[:sleep_enabled] = false
     fake_time = -10
+
     allow(Time).to receive(:now) { fake_time += 10 }
 
     handler = proc do |_exception, _attempt_number, total_delay|
@@ -124,19 +114,23 @@ describe Retries do
 
     tries = 0
 
-    with_retries(max_tries: 3, handler: handler, rescue: CustomErrorA) do
+    Retries.run(
+      sleep_enabled: false, max_tries: 3, handler: handler,
+      rescue: CustomErrorA
+    ) do
       tries += 1
       raise CustomErrorA if tries < 3
     end
   end
 
   it 'not sleep if sleep enabled is false' do
-    Retries.sleep_enabled = false
+    Retries.options[:sleep_enabled] = false
     # If we get a Timeout::Error, this won't pass.
     expect do
       Timeout.timeout(2) do
-        with_retries(
-          max_tries: 10, base_sleep_seconds: 100, max_sleep_seconds: 10_000
+        Retries.run(
+          sleep_enabled: false, max_tries: 10,
+          base_sleep_seconds: 100, max_sleep_seconds: 10_000
         ) do
           raise 'blah'
         end
@@ -146,20 +140,21 @@ describe Retries do
   end
 
   it 'raises error if :base_sleep_seconds is greater than :max_sleep_seconds' do
-    proc do
-      with_retries(base_sleep_seconds: 2, max_sleep_seconds: 1) {}
+    expect do
+      Retries.run(base_sleep_seconds: 2, max_sleep_seconds: 1) {}
     end
-      .must_raise(ArgumentError)
-      .message.must_equal(
+      .to raise_error(
+        ArgumentError,
         ':base_sleep_seconds cannot be greater than :max_sleep_seconds'
       )
   end
 
   it 'raises error if no block passed' do
-    proc do
-      with_retries
+    expect do
+      Retries.run
     end
-      .must_raise(ArgumentError)
-      .message.must_equal 'with_retries must be passed a block'
+      .to raise_error(
+        ArgumentError, 'tried to create Retries object without a block'
+      )
   end
 end

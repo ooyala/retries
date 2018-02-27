@@ -1,6 +1,6 @@
 # Retries
 
-Retries is a gem that provides a single function, `with_retries`,
+Retries is a gem that provides a class method, `Retries.run`,
 to evaluate a block with randomized, truncated, exponential backoff.
 
 There are similar projects out there
@@ -24,14 +24,14 @@ Here's how you can try it three times before failing:
 
 ```ruby
 require 'retries'
-with_retries(max_tries: 3) { do_the_thing }
+Retries.run(max_tries: 3) { do_the_thing }
 ```
 
 The block is passed a single parameter, `attempt_number`,
 which is the number of attempts that have been made (starting at 1):
 
 ```ruby
-with_retries(max_tries: 3) do |attempt_number|
+Retries.run(max_tries: 3) do |attempt_number|
   puts "Trying to do the thing: attempt #{attempt_number}"
   do_the_thing
 end
@@ -39,13 +39,13 @@ end
 
 ### Custom exceptions
 
-By default `with_retries` rescues instances of `StandardError`.
+By default `Retries.run` rescues instances of `StandardError`.
 You'll likely want to make this more specific to your use case.
 You may provide an exception class or an array of classes:
 
 ```ruby
-with_retries(max_tries: 3, rescue: RestClient::Exception) { do_the_thing }
-with_retries(
+Retries.run(max_tries: 3, rescue: RestClient::Exception) { do_the_thing }
+Retries.run(
   max_tries: 3, rescue: [RestClient::Unauthorized, RestClient::RequestFailed]
 ) do
   do_the_thing
@@ -54,7 +54,7 @@ end
 
 ### Handlers
 
-`with_retries` allows you to pass a custom handler
+`Retries.run` allows you to pass a custom handler
 that will be called each time before the block is retried.
 The handler will be called with three arguments:
 `exception` (the rescued exception),
@@ -67,7 +67,8 @@ handler = proc do |exception, attempt_number, total_delay|
   puts "Handler saw a #{exception.class}; retry attempt #{attempt_number};" \
        " #{total_delay} seconds have passed."
 end
-with_retries(
+
+Retries.run(
   max_tries: 5, handler: handler, rescue: [RuntimeError, ZeroDivisionError]
 ) do |attempt|
   (1 / 0) if attempt == 3
@@ -86,7 +87,7 @@ Handler saw a RuntimeError; retry attempt 4; 1.886828 seconds have passed.
 
 ### Delay parameters
 
-By default, `with_retries` will wait about a half second between the first
+By default, `Retries.run` will wait about a half second between the first
 and second attempts, and then the delay time will increase exponentially
 between attempts (but stay at no more than 1 second).
 The delays are perturbed randomly. You can control the parameters
@@ -95,10 +96,20 @@ For instance, you can start the delay at 100 ms
 and go up to a maximum of about 2 seconds:
 
 ```ruby
-with_retries(
+Retries.run(
   max_tries: 10, :base_sleep_seconds => 0.1, max_sleep_seconds: 2.0
 ) { do_the_thing }
 ```
+
+### Global configuration
+
+You can configure Retries globally:
+
+```ruby
+Retries.options.merge! max_tries: 50, max_sleep_seconds: 15
+```
+
+But be careful! It can affect foreign code, for example, in required gems.
 
 ### Testing
 
@@ -106,8 +117,8 @@ In tests, you may wish to test that retries are being performed
 without any delay for sleeping:
 
 ```ruby
-Retries.sleep_enabled = false
-with_retries(max_tries: 100) { raise 'Boo!' } # Now this fails fast
+Retries.options[:sleep_enabled] = false
+Retries.run(max_tries: 100) { raise 'Boo!' } # Now this fails fast
 ```
 
 Of course, this will mask any errors to the `:base_sleep_seconds`
