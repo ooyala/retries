@@ -2,6 +2,7 @@
 
 # Class for retries running
 class Retries
+  # Current version
   VERSION = '1.0.0'
 
   class << self
@@ -51,6 +52,7 @@ class Retries
 
   private_constant :REQUIRED_SIMPLE_OPTIONS
 
+  # @!visibility private
   def initialize(options = {}, &block)
     options = self.class.options.merge options
 
@@ -67,6 +69,7 @@ class Retries
     validate
   end
 
+  # @!visibility private
   def run
     # Let's do this thing
     @attempts = 0
