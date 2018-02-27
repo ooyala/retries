@@ -45,32 +45,26 @@ class Retries
     end
   end
 
+  REQUIRED_SIMPLE_OPTIONS = %i[
+    sleep_enabled max_tries base_sleep_seconds max_sleep_seconds
+  ].freeze
+
+  private_constant :REQUIRED_SIMPLE_OPTIONS
+
   def initialize(options = {}, &block)
     options = self.class.options.merge options
 
-    @sleep_enabled = options.fetch(:sleep_enabled)
-
-    @max_tries = options.fetch(:max_tries)
-    unless @max_tries.positive?
-      raise ArgumentError, ':max_tries must be greater than 0'
-    end
-
-    @base_sleep_seconds = options.fetch(:base_sleep_seconds)
-    @max_sleep_seconds = options.fetch(:max_sleep_seconds)
-    if @base_sleep_seconds > @max_sleep_seconds
-      raise(
-        ArgumentError,
-        ':base_sleep_seconds cannot be greater than :max_sleep_seconds'
-      )
+    REQUIRED_SIMPLE_OPTIONS.each do |option_name|
+      instance_variable_set :"@#{option_name}", options.fetch(option_name)
     end
 
     @handler = options[:handler]
 
     @exception_types_to_rescue = Array(options.fetch(:rescue))
 
-    return if (@block = block)
+    @block = block
 
-    raise ArgumentError, 'tried to create Retries object without a block'
+    validate
   end
 
   def run
@@ -81,6 +75,21 @@ class Retries
   end
 
   private
+
+  def validate
+    unless @max_tries.positive?
+      raise ArgumentError, ':max_tries must be greater than 0'
+    end
+
+    if @base_sleep_seconds > @max_sleep_seconds
+      raise ArgumentError,
+        ':base_sleep_seconds cannot be greater than :max_sleep_seconds'
+    end
+
+    return true if @block
+
+    raise ArgumentError, 'tried to create Retries object without a block'
+  end
 
   def try
     @attempts += 1

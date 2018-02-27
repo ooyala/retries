@@ -1,3 +1,5 @@
+Layout/ArgumentAlignment:
+  EnforcedStyle: with_fixed_indentation
 Layout/SpaceAroundMethodCallOperator:
   Enabled: true
 
