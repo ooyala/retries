@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.0.0
+
+*   Rewrite `Kernel#with_retries` to `Retries.run`.
+*   Replace `Retries.sleep_enabled` with `Retries.options` (Hash with defaults).
+*   Replace Minitest tests with RSpec specs.
+*   Add RuboCop and resolve offenses.
+*   Update dependencies.
+*   Require Ruby 2.4 or newer.
+*   Resolve gem building warnings (add license field).
+*   Add EditorConfig file.
+
 ## 0.0.5
 
 * Bugfix for when `:rescue` isn't specified (@hlascelles).
