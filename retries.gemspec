@@ -29,4 +29,6 @@ Gem::Specification.new do |gem|
 
   # For linting
   gem.add_development_dependency 'rubocop', '~> 0.82.0'
+  gem.add_development_dependency 'rubocop-performance', '~> 1.5'
+  gem.add_development_dependency 'rubocop-rspec', '~> 1.38'
 end
